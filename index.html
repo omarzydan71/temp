@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كويز أساسيات الإنشاء المعماري - صيف 2023</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #fff;
+            --primary: #007bff;
+            --primary-hover: #0056b3;
+            --correct-bg: #d4edda;
+            --correct-border: #c3e6cb;
+            --correct-text: #155724;
+            --wrong-bg: #f8d7da;
+            --wrong-border: #f5c6cb;
+            --wrong-text: #721c24;
+            --exp-bg: #e2e3e5;
+            --exp-text: #383d41;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Cairo', sans-serif;
+            margin-top: 15px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .btn-secondary { background-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        .progress-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            height: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item { margin-bottom: 12px; }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .option-label:hover {
+            background-color: #f1f8ff;
+            border-color: #b3d7ff;
+        }
+
+        .option-input {
+            margin-left: 15px;
+            transform: scale(1.2);
+        }
+
+        .option-label.correct {
+            background-color: var(--correct-bg) !important;
+            border-color: var(--correct-border) !important;
+            color: var(--correct-text) !important;
+            font-weight: 600;
+        }
+
+        .option-label.wrong {
+            background-color: var(--wrong-bg) !important;
+            border-color: var(--wrong-border) !important;
+            color: var(--wrong-text) !important;
+        }
+        
+        .disabled-options { pointer-events: none; }
+
+        .explanation {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--exp-bg);
+            color: var(--exp-text);
+            border-radius: 8px;
+            font-size: 1rem;
+            border-right: 5px solid var(--primary);
+            line-height: 1.6;
+        }
+
+        #quiz-screen, #result-screen, #review-screen { display: none; }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .review-block {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .review-q-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .review-status.correct { color: var(--correct-text); font-weight: bold; }
+        .review-status.wrong { color: var(--wrong-text); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="intro-screen">
+        <h1>كويز أساسيات الإنشاء المعماري</h1>
+        <p class="subtitle">
+            يتكون هذا الاختبار من <strong>90 سؤال</strong> لامتحان صيف 2023.<br>
+            تم تفعيل الإجابات الصحيحة والتعديلات بناءً على طلبك لتتمكن من اختبار نفسك.<br>
+            في نهاية الاختبار يمكنك مراجعة جميع الأسئلة أو أخطائك فقط.
+        </p>
+        <button class="btn" onclick="startQuiz()">ابدأ الاختبار الآن</button>
+    </div>
+
+    <div class="container" id="quiz-screen">
+        <div class="progress-text" id="progress-text">سؤال 1 من 90</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="question-text" id="question-text"></div>
+        <ul class="options-list" id="options-list"></ul>
+        <div class="explanation" id="explanation-box"></div>
+        <button class="btn" id="next-btn" style="display: none;" onclick="nextQuestion()">السؤال التالي</button>
+    </div>
+
+    <div class="container" id="result-screen">
+        <h2>اكتمل الاختبار!</h2>
+        <p class="subtitle">لقد أنهيت جميع الأسئلة. إليك نتيجتك النهائية:</p>
+        <div class="score-display" id="final-score">0 / 90</div>
+        
+        <button class="btn" onclick="showReview('mistakes')">مراجعة الأخطاء فقط</button>
+        <button class="btn btn-secondary" onclick="showReview('all')">مراجعة الامتحان كله</button>
+        <button class="btn btn-secondary" onclick="location.reload()" style="margin-top: 10px; background-color: #28a745;">إعادة الاختبار</button>
+    </div>
+
+    <div class="container" id="review-screen">
+        <h2 id="review-title">المراجعة</h2>
+        <button class="btn btn-secondary" style="margin-bottom: 20px;" onclick="backToResults()">عودة للنتيجة</button>
+        <div id="review-content"></div>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="backToResults()">عودة للنتيجة</button>
+    </div>
+
+    <script>
+        // داتا أسئلة صيف 2023 بالإجابات والتعديلات المحدثة
+        const questionsData = [
+            {"q": "1- تستخدم الطبقات العازلة لحماية المبني من تاثير الرطوبة المتوقع تاثرية علي.", "opts": ["بلاطة الدور الأرضي الملاصقة للتربة", "على الحمامات ودورات المياه", "بلاطة دور السطح", "جميع ما سبق"], "ans": 3},
+            {"q": "2- الطبقة العازلة للدور الارضي تتكون غالبا من مادة ...", "opts": ["الدهان البوتمين على الساخن", "الخيش المقطرن", "الفائف المطاطية والبتومينية", "الاجابة (b) و (c) معا"], "ans": 3},
+            {"q": "3- عمليات العزل الخاصة بالحوائط الرأسية او الاساسات في العادة ما تكون من مادة ...", "opts": ["لفائف الخيش المقطرن", "الدهانت البتومينية او الاسمنتية العازلة", "الفائف المطاطية والبيتومينية", "الاجابة (b) و (c) معا"], "ans": 1},
+            {"q": "4- الطبقة العازلة للدور الارضى يجب ان تمتد ...", "opts": ["فيما بين السملات الخاصة بالاساسات", "بين الحوائط المحملة علي السملات اسفل سطح التربة", "بكامل مسطح الدور الأرضي بدون اي فواصل", "جميع ما سبق"], "ans": 3},
+            {"q": "5- يتم فرد الطبقة العازلة للرطوبة للدور الأرضي مباشرة على ...", "opts": ["بلاطة الدور الأرضي", "طبقة حماية من الخرسانة العادية", "طبقة لياسة اسمنتية", "طبقة من الردم المدكوك والمسوي جيدا", "خراسانة الميول"], "ans": 1},
+            {"q": "6- يتم فرد الطبقة العازلة للرطوبة لدور السطح مباشرة على ...", "opts": ["طبقة لياسة اسمنتية", "بين الحوائط المحملة علي السملات", "بلاطة الدور الاخير من الخراسنة المسلحة", "طبقة من العزل الحراري"], "ans": 2},
+            {"q": "7- الدور الاساسي للسملات في اساسات المباني الهيكلية هو ....", "opts": ["الربط بين القواعد الخرسانة المسلحة", "الربط بين القواعد الخرسانة العادية", "حمل الحوائط الخاصة بالاساسات", "الاجابة (a) و (c) معا"], "ans": 3},
+            {"q": "8- بلاطة الدور الارضى الملاصقة لسطح التربة الطبيعية تتكون من ...", "opts": ["طبقة خرسانة عادية بسمك 15 سم", "بلاطة من الخرسانة المسلحة سمك 10 سم", "طبقة خرسانة عادية بسمك 10 سم", "غير ما سبق"], "ans": 0},
+            {"q": "9- الطبقة التالية مباشرة للطبقة العازلة للرطوبة في الدور الارضي هي...", "opts": ["طبقة لياسة اسمنتية", "طبقة حماية من الخرسانة العادية بسمك 10 سم", "طبقة من رمل التسوية", "طبقة خرسانة ميول"], "ans": 1},
+            {"q": "10- وظيفة طبقة الرمل كاحد مكونات طبقات النهو (finishing) فى الادوار المختلفة هي ...", "opts": ["تسوية الاخطاء الناتجة من تغير اعلي سطح الخرسانة", "تسهيل ضبط افقية الطبقة النهائية بمونة اللصق", "معادلة الفرق في سمك المادة النهائية بتغير الفراغات", "جميع ما سبق"], "ans": 3},
+            {"q": "11- فى حالة انخفاض مستوى بلاطة الدور الارضي عن منسوب الشارع فان الغزل الرأسي للحائط الخارجي يكون..", "opts": ["من الجهه الداخلية للحماية من مياه الامطارا على الرصيف", "من الجهه الخارجية لحماية الفراغ الداخلي من المياه الجوفية", "من الجهه الداخلية لحماية الحائط من رطوبة التربة", "غير ما سبق"], "ans": 1},
+            {"q": "12- في حالة ارتفاع مستوي بلاطة الدور الأرضي عن منسوب الشارع فان الغزل الرأسي للحائط الخارجي يكون...", "opts": ["من الجهة الداخلية للحماية من مياه الامطار اعلي الرصيف", "من الجهه الخارجية لحماية الفراغ الداخلي من المياه الجوفية", "من الجهه الداخلية لحماية الحائط من رطوبة التربة", "غير ما سبق"], "ans": 2},
+            {"q": "13- العنصر المستخدم لتقييل من تاثير مستخدمي الرصيف والاحتكاك بين واجهة المبني والرصيف هو ..", "opts": ["الوزرة", "الوزرة المائلة", "السفل", "الطيلسانة"], "ans": 2},
+            {"q": "14- يعتبر من انواع الاخشاب الصلبة الشائع استخدامها ...", "opts": ["الخشب الأرو", "الخشب الزان", "الخشب السويد", "الاجابة (a) و (b) معا"], "ans": 3},
+            {"q": "15- المادة المكونة للسفل يجب ان تكون ...", "opts": ["من نفس مادة مواد نهو الفراغات", "من البياض الاسمنتي المماثل لبياض الفراغات الداخلية", "مادة صلبة عالية الاجهاد لحامية المبنى وعلاقتة بالارصفة", "مادة مرنة لمعالجة العلاقة بيي الحائط الخارجي والارصفة"], "ans": 2},
+            {"q": "16- الوزرة المائلة هي وسيلة ...", "opts": ["لمعالجة العلاقة بين الحوائط والارضيات في المستويات المختلفة", "لمعالجة العلاقة بين الدروة وبلاط دور السطح", "لمعلاجة العلاقة بين الرصيف والحوائط الخارجية", "لمعالجة العلاقة بين سيراميك الارضيات والحوائط"], "ans": 1},
+            {"q": "17- في الطبقة العازلة للرطوبة المكونة من لفائف الخيش المقطرن يتم الربط بين طبقتي الخيش المقطرن باستخدام ...", "opts": ["وجهين من الدهان البوتمين علي الساخن", "ثلاث اوجه من دهان البيتومين علي الساخن", "التسخين بالبشبوري علي مسافة 10 سم من التراكب بين الفائف", "جميع ما سبق"], "ans": 1},
+            {"q": "18- في الطبقة العازلة للرطوبة المكونة من للفائف المطاطية او البتومينية يتم الربط بين اللفائف باستخدام ...", "opts": ["وجهين من الدهان البوتمين علي الساخن", "ثلاث اوجه من دهان البيتومين على الساخن", "التسخين بالبشبوري على مسافة 10 سم من التراكب", "جميع ما سبق"], "ans": 2},
+            {"q": "19- لضمان استمرار الطبقة العازلة للسطح بين بلاطة دور السطح افقيا والدروة راسيا تستخدم ....", "opts": ["الوزرة المائلة من البلاط", "رقبة زجاجة دائرية او مائلة من المونة الاسمنتية", "التسخين بالبشبوري علي مسافة 10 سم من التراكب", "جميع ما سبق"], "ans": 1},
+            {"q": "20- لمعالجة اعلي الدروة والواجهة من مياه الامطار تستخدم .", "opts": ["الوزرة المائلة من البلاط", "رقبة زجاجة دائرية او مائلة من المونة الاسمنتية", "الوزرة الراسية", "الطيلسانة"], "ans": 3},
+            {"q": "21- المادة المناسبة لتنفيذ الدروة هي ....", "opts": ["الخرسانة المسلحة", "المباني سمك طوبة على الاقل", "المباني سمك نصف طوبة علي الاقل", "الاجابة (a) و (b)"], "ans": 3},
+            {"q": "22- زور المطر هو تعريف يقصد به ...", "opts": ["بروزات في الواجهه للحماية من ميا الامطار", "تجاويف مستمرة في بلاط الارصفة لصرف مياه الامطار", "تجويف نصف دائري في الطيلسانة لوقف سريان مياه الامطار", "ميل في اعلي سطح الطيلسانة من الاتجاهين"], "ans": 2},
+            {"q": "23- الطبقة التالية للعزل في دور السطح هي ...", "opts": ["طبقة الحماية من الخرسانة العادية", "خرسانة ميول من الخرسانة العادية", "طبقة من لياسة اسمنتية", "طبقة دفرة من الخرسانة العادية"], "ans": 1},
+            {"q": "24- الدور الاساسي لخرسانة الميول هو ...", "opts": ["ضبط منسوب الغزل في اتجاه ميل الصرف", "ضبط منسوب الرصيف في اتجاة صرف مياه الامطار", "ضبط منسوب بلاط الاسطح فى اتجاه صرف مياه الامطار", "ضبط منسوب ارضية سراميك الحمامات فى اتجاه الصرف"], "ans": 2},
+            {"q": "25- الوظيفة الاساسية للبؤج والاوتار قبل عملية ملو ودرع البياض هي ....", "opts": ["ضبط رأسية السطح الخارجي للبياض في مستوي راسي تماما", "ضبط زاوية تعامد سطحى البياض للحوائط المتعامدة", "تسهيل حركة الادة لضبط استواء البياض بكامل مسطح الحائط", "جميع ما سبق"], "ans": 3},
+            {"q": "26- عدد خطوط الابعاد للمحيط الخارجي في المسقط الافقي هو ....", "opts": ["1 خط ابعاد", "2 خط ابعاد", "3 خط ابعاد", "4 خط ابعاد"], "ans": 2},
+            {"q": "27- عدد خطوط الأبعاد في الاتجاه الواحد لأي فراغ داخلي في المساقط الافقية هو ...", "opts": ["1 خط ابعاد", "2 خط ابعاد", "3 خط ابعاد", "4 خط ابعاد"], "ans": 1},
+            {"q": "28- يتم عزل الاساسات بإستخدام ...", "opts": ["رولات بيتومينية", "دهان بيتومين", "خيش مقطرن", "جميع ما سبق"], "ans": 1},
+            {"q": "29- متوسط سمك الطبقة العازلة للمياة والرطوبة فى الاسطح هو ...", "opts": ["2 مم", "4 مم", "1 سم", "2 سم"], "ans": 3},
+            {"q": "30- من الوظائفة الاساسية للسفل في الدور الارضي .", "opts": ["مقاومة العوامل الطبيعية", "شكل جمالي", "عزل المياه", "جميع ما سبق"], "ans": 3},
+            {"q": "31- لا يجب ان يقل عدد اوجه العزل بالدهان عن ...", "opts": ["2 وجه", "3 اوجه", "4 اوجه", "5 اوجه"], "ans": 0},
+            {"q": "32- لا يجب ان يقل عرض قلبة السلم في المباني السكنية عن.......", "opts": ["90 سم", "100 سم", "120 سم", "130 سم"], "ans": 0},
+            {"q": "33- في الابواب يتم تثبيت المفصلات في..", "opts": ["الاسطامه", "الرأسة", "البر", "الحشوة"], "ans": 0},
+            {"q": "34- في الأبواب يستخدم البر في .", "opts": ["تثبيت الحلق", "تثبيت المفصلات", "معالجة اختلاف المواد", "جميع ما سبق"], "ans": 2},
+            {"q": "35- في الأبواب يتم تثبيت الحلوق في الحوائط بإستخدام.", "opts": ["الناقر واللسان", "مسمار الفيشر", "الكانات", "جميع ما سبق"], "ans": 2},
+            {"q": "36- في الارضيات الخشبية تكون وظيفة الدكم الاساسية هي..", "opts": ["تثبيت الواح التطبيق", "ربط العلقات", "تعديل المنسوب", "جميع ما سبق"], "ans": 1},
+            {"q": "37- في الارضيات الخشبية يكون اتجاه العلفات.", "opts": ["مع فتحة الباب", "عمودي على فتحة الباب", "ليس له علاقة بالباب", "a و b معا"], "ans": 1},
+            {"q": "38- يتراوح سمك بلاطة السيراميك بين.", "opts": ["1-4 مم", "5-10 مم", "1-2 سم", "جميع ما سبق"], "ans": 1},
+            {"q": "39- يفضل أثناء تثبيت الارضيات الرخامية استخدام فى طبقة التسوية ...", "opts": ["رمل عجمي", "مونه حرشه", "مونة اسمنتية", "رمل تسويه"], "ans": 3},
+            {"q": "40- يفضل استخدام في ارضيات الارصفة ...", "opts": ["بلاط اسمنتي", "جرانيت", "بورسلين", "سيراميك"], "ans": 0},
+            {"q": "41- تستخدم الارضيات الايبوكسيه فى ...", "opts": ["الحمامات", "اسطح البنايات", "المعامل", "الارصفة"], "ans": 2},
+            {"q": "42- الوظيفة الاساسية لطبقة المعجون في اعمال الدهانات هي..........", "opts": ["عزل الرطوبة", "تسوية السطح", "ربط الدهان بالبياض", "جميع ما سبق"], "ans": 3},
+            {"q": "43- يتم عمل طبقة الطرطشة .", "opts": ["قبل أعمال المباني", "بعد اعمال المحارة", "قبل اعمال البياض", "قبل طبقة المعجون"], "ans": 2},
+            {"q": "44- اي من الزوايا الآتية تعتبر زاوية الميل المثالية للسلم الكهربائي..", "opts": ["30 درجة", "45 درجة", "60 درجة", "جميع ما سبق"], "ans": 0},
+            {"q": "45- اكبر عدد درجات سلم في القلبة الواحدة هو.......", "opts": ["8 درجات", "10 درجات", "12 درجة", "14 درجة"], "ans": 3},
+            {"q": "46- سمك النايمه في درج السلم هو.....", "opts": ["1 سم", "2 سم", "4 سم", "5 سم"], "ans": 2},
+            {"q": "47- عرض النايمة في درج السلم هو ......", "opts": ["30 سم", "32 سم", "42 سم", "25 سم"], "ans": 0},
+            {"q": "48- يجب ان يتراوح ارتفاع درجة السلم الواحدة بين.......", "opts": ["10-14سم", "14-16 سم", "15-20 سم", "جميع ما سبق"], "ans": 1},
+            {"q": "49- أي من أنواع الطوب الاتية يمكن استخدامة في الحوائط الحاملة .", "opts": ["الطوب الجيري", "الطوب الحراري", "الطوب الزجاجي", "جميع ما سبق"], "ans": 0},
+            {"q": "50- في اي من المساقط الافقية لا يظهر خط قطع السلم........", "opts": ["دور البدروم", "الدور الارضي", "الدور المتكرر", "الدور الاخير"], "ans": 3},
+            {"q": "51- يتميز نظام الجمالون ب ...", "opts": ["البحور الواسعة", "التكلفة المنخفضة", "تحمل الأوزان", "جميع ما سبق"], "ans": 0},
+            {"q": "52- المنشآت المعدنية تعتبر من..", "opts": ["المباني الهيكلية", "المباني الاطارية", "الجمالونات", "جميع ما سبق"], "ans": 3},
+            {"q": "53- يمكن تغطية الصالات المغطاه للالعاب الرياضية بنظام انشائي.", "opts": ["نظام الجمالون", "النظام الاطاري", "نظام هيكلي معدني", "a و b معا"], "ans": 3},
+            {"q": "54- تعتبر القواعد الشريطية هي اساس للنظام الانشائي..", "opts": ["الهيكلي", "الاطاري", "الحوائط الحاملة", "جميع ما سبق"], "ans": 2},
+            {"q": "55- من اسباب عمل لبشة خرسانية للقواعد.", "opts": ["عدم تجانس التربة", "كبر مساحة المنشأ", "كبر حجم القواعد المنفصلة", "a و b معا"], "ans": 3},
+            {"q": "56- من اسباب استخدام الخوازيق.", "opts": ["التقليل من حجم القواعد", "انخفاض منسوب التربة الصالحة للتأسيس", "إرتفاع منسوب المياه الجوفية", "جميع ما سبق"], "ans": 1},
+            {"q": "57- من وظائف السملات.", "opts": ["ربط الاعمدة والقواعد", "حمل مباني الدور الأرضي", "نقل الأحمال", "جميع ما سبق"], "ans": 3},
+            {"q": "58- من وظائف الكمرات الأساسية في النظم الهيكلية.", "opts": ["نقل الأحمال", "ربط الاعمدة", "حمل المبانى", "جميع ما سبق"], "ans": 3},
+            {"q": "59- من أنواع الاسقف في النظام الانشائي الهيكلي..", "opts": ["الكمر والبلاطات", "الهوردي", "الفلات سلاب", "جميع ما سبق"], "ans": 3},
+            {"q": "60- لا يجب ان يقل سمك الحوائط الخارجية في المباني عن سمك.", "opts": ["نصف طوبة", "طوبة", "2 طوبة", "جميع ما سبق"], "ans": 1},
+            {"q": "61- يسمى الصف الواحد من الطوب ...", "opts": ["عرنوس", "مدماك", "قصية", "قده"], "ans": 1},
+            {"q": "62- يطلق على الضلع الطويل من الطوبة ...", "opts": ["عرنوس", "مدماك", "قده", "شناوي"], "ans": 3},
+            {"q": "63- كلمة طوبة تعنى بالابعاد ......", "opts": ["10-15 سم", "5-10 سم", "20-25 سم", "جميع ما سبق"], "ans": 2},
+            {"q": "64- من اهم مميزات الطوب الاسمنتى..", "opts": ["قلة التكلفة", "تحمل الاجهاد", "خفة الوزن", "جميع ما سبق"], "ans": 1},
+            {"q": "65- يسمى اللحام البارز بين صفوف الطوب ...", "opts": ["عرنوس", "كحلة", "مدماك", "قده"], "ans": 0},
+            {"q": "66- من أنواع الطوب الطبيعي.", "opts": ["الطوب الاحمر", "الطوب الاسمنتي", "طوب السورناجا", "الطوب الجيري"], "ans": 3},
+            {"q": "67- تعتبر مباني قرية القرنة للمعماري حسن فتحي من المنشآت ...", "opts": ["الاطارية", "الهيكلة", "الحوائط الحاملة", "جميع ما سبق"], "ans": 2},
+            {"q": "68- يتميز نظام الانشاء بالحوائط الحاملة ب ...", "opts": ["الفراغات الواسعة", "الفتحات الضيقة", "الارتفاعات العالية", "جميع ما سبق"], "ans": 1},
+            {"q": "69- اي من النظم الانشائية الاتيه يمكن دمجها مع النظام الهيكلي في منشأ واحد", "opts": ["النظام الاطاري", "الجمالون", "الحوائط الحاملة", "جميع ما سبق"], "ans": 0},
+            {"q": "70- من اهم مميزات المنشآت الخيامية.", "opts": ["خفة الوزن", "تحمل الاوزان", "الصلابة", "جميع ما سبق"], "ans": 0},
+            {"q": "71- أي من هذه الفراغات لا يجب ان تحتوي على طبقة عازلة للمياة والرطوبة..", "opts": ["حمام", "مطبخ", "رصيف", "بدروم"], "ans": 2},
+            {"q": "72- في اعمال التصميمات الهندسية المرحلة السابقة لمرحلة اعداد جداول الكميات هي ...", "opts": ["التصميم الابتدائي", "كراسة الشروط", "التصميمات التنفيذية", "الفكرة المعمارية"], "ans": 2},
+            {"q": "73- يتم تثبيت اصابع الباركية في الأرضية الخشبية بإستخدام........", "opts": ["الناقر واللسان", "مسمار شيشة", "الغراء", "a و b معا"], "ans": 3},
+            {"q": "74- أي من النظم الانشائية استخدمت في انشاء برج ايفل ...........", "opts": ["النظام الهيكلي المعدني", "النظام الاطاري", "نظام الجمالون", "نظام الحائط الحامل"], "ans": 0},
+            {"q": "75- يجب تثبيت الشباك الألومنيوم على............", "opts": ["حلق زفر", "حلق رخام", "حلق سيراميك", "جميع ما سبق"], "ans": 3},
+            {"q": "76- للعزل الصوتي داخل الفراغات يستخدم في تجليد الحوائط .", "opts": ["تجاليد خشبية", "فوم", "صوف زجاجي", "جميع ما سبق"], "ans": 1},
+            {"q": "77- للعزل الحرارى داخل الفراغات يستخدم فى تجليد الحوائط ...", "opts": ["تجاليد خشبية", "فوم", "صوف زجاجي", "جميع ما سبق"], "ans": 2},
+            {"q": "78- للحصول على نقاء صوتي داخل الفراغات يستخدم في تجليد الحوائط .", "opts": ["تجاليد خشبية", "فوم", "صوف زجاجي", "جميع ما سبق"], "ans": 0},
+            {"q": "79- في الارضيات يكون سمك البلاط الاسمنتي..", "opts": ["2 مم", "4 مم", "2 سم", "4 سم"], "ans": 2},
+            {"q": "80- في الارضيات الخشبية تكون المسافة بي العلفات ...", "opts": ["40-60 سم", "30-20 سم", "80-100 سم", "120-140 سم"], "ans": 0},
+            {"q": "81- عادة ما يكون مقاس قطاع حلق الباب", "opts": ["4x6 بوصة", "2x4 بوصة", "1x2 بوصة", "4x4 بوصة"], "ans": 1},
+            {"q": "82- في الابواب عادة ما يكون مقاس قطاع الاسطامة", "opts": ["1x4 بوصة", "2x4 بوصة", "2x2 بوصة", "4x4 بوصة"], "ans": 1},
+            {"q": "83- اي من أنواع الأخشاب الاتية يعتبر من الأخشاب الصلبة", "opts": ["الخشب الزان", "الخشب الارو", "خشب السويدي", "a و b معا"], "ans": 3},
+            {"q": "84- أي من أنواع الأخشاب الاتية يعتبر من الأخشاب الطرية ...", "opts": ["الخشب السويدي", "الخشب الارو", "خشب الزان", "a و b معا"], "ans": 0},
+            {"q": "85- اي من أنواع الأخشاب الاتية يستخدم في الارضيات الباركيه المسمار ..........", "opts": ["الخشب الزان", "الخشب الارو", "خشب السويدي", "a و b معا"], "ans": 3},
+            {"q": "86- اي من أنواع الأخشاب الاتية يستخدم في الارضيات الخشبية الواح التطبيق", "opts": ["الخشب السويدي", "الخشب الارو", "خشب الزان", "a و b معا"], "ans": 0},
+            {"q": "87- أي من أنواع الطوب الاتية يفضل استخدامها في حوائط الحمامات ......", "opts": ["طوب اسمنتي مفرغ", "طوب احمر", "طوب سورناجا", "طوب حراري"], "ans": 0},
+            {"q": "88- أي من هذه الطبقات لا تتواجد في طبقات الارضيات في اسطح المباني .....", "opts": ["طبقة خرسانه ميول", "طبقة عازلة", "طبقة رمل تسوية", "طبقة مونة تثبيت"], "ans": 2},
+            {"q": "89- أي من هذه الطبقات لا تتواجد في طبقات الارضيات في الدور الارضي للمباني.......", "opts": ["طبقة خرسانه ميول", "طبقة عازلة", "طبقة رمل تسوية", "طبقة مونة تثبيت"], "ans": 0},
+            {"q": "90- أي من الفراغات الاتية لا يوجد بها وزره ...............", "opts": ["غرفة نوم", "فراغ معيشة", "تراس", "حمام"], "ans": 3}
+        ];
+        
+        let shuffledQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function startQuiz() {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            
+            shuffledQuestions = JSON.parse(JSON.stringify(questionsData)); 
+            
+            shuffledQuestions.forEach(q => {
+                let optionsWithIndex = q.opts.map((opt, idx) => ({ text: opt, isCorrect: idx === q.ans }));
+                q.shuffledOpts = optionsWithIndex; 
+                q.userAnsweredCorrectly = false;
+                q.userSelectedText = null;
+            });
+
+            currentQuestionIndex = 0;
+            score = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = shuffledQuestions[currentQuestionIndex];
+            
+            document.getElementById('progress-text').innerText = `سؤال ${currentQuestionIndex + 1} من ${shuffledQuestions.length}`;
+            const progressPercent = ((currentQuestionIndex) / shuffledQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+            
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optionsList = document.getElementById('options-list');
+            optionsList.innerHTML = '';
+            optionsList.classList.remove('disabled-options');
+            
+            q.shuffledOpts.forEach((opt, index) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                label.id = `opt-label-${index}`;
+                
+                label.onclick = (e) => {
+                    e.preventDefault();
+                    selectOption(index);
+                };
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'current-question';
+                radio.className = 'option-input';
+                radio.id = `opt-input-${index}`;
+
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(opt.text));
+                li.appendChild(label);
+                optionsList.appendChild(li);
+            });
+
+            document.getElementById('explanation-box').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            
+            if (currentQuestionIndex === shuffledQuestions.length - 1) {
+                document.getElementById('next-btn').innerText = "إنهاء الاختبار";
+            } else {
+                document.getElementById('next-btn').innerText = "السؤال التالي";
+            }
+        }
+
+        function selectOption(selectedIndex) {
+            const q = shuffledQuestions[currentQuestionIndex];
+            const optionsList = document.getElementById('options-list');
+            
+            if(optionsList.classList.contains('disabled-options')) return;
+            optionsList.classList.add('disabled-options');
+            
+            document.getElementById(`opt-input-${selectedIndex}`).checked = true;
+            q.userSelectedText = q.shuffledOpts[selectedIndex].text;
+
+            const isCorrect = q.shuffledOpts[selectedIndex].isCorrect;
+            const selectedLabel = document.getElementById(`opt-label-${selectedIndex}`);
+            
+            if (isCorrect) {
+                selectedLabel.classList.add('correct');
+                score++;
+                q.userAnsweredCorrectly = true;
+            } else {
+                selectedLabel.classList.add('wrong');
+                q.userAnsweredCorrectly = false;
+                
+                const correctIndex = q.shuffledOpts.findIndex(o => o.isCorrect);
+                document.getElementById(`opt-label-${correctIndex}`).classList.add('correct');
+            }
+
+            const expBox = document.getElementById('explanation-box');
+            const correctText = q.shuffledOpts.find(o => o.isCorrect).text;
+            expBox.innerHTML = `<strong>الإجابة المسجلة حالياً:</strong> ${correctText}`;
+            expBox.style.display = 'block';
+
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            
+            document.getElementById('final-score').innerText = `${score} / ${shuffledQuestions.length}`;
+        }
+
+        function showReview(mode) {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('review-screen').style.display = 'block';
+            
+            const reviewContainer = document.getElementById('review-content');
+            reviewContainer.innerHTML = '';
+            
+            let questionsToReview = [];
+            if (mode === 'mistakes') {
+                document.getElementById('review-title').innerText = "مراجعة الأخطاء فقط";
+                questionsToReview = shuffledQuestions.filter(q => !q.userAnsweredCorrectly);
+                if(questionsToReview.length === 0) {
+                    reviewContainer.innerHTML = '<p style="text-align:center; font-weight:bold; color:green;">أحسنت! ليس لديك أي أخطاء.</p>';
+                    return;
+                }
+            } else {
+                document.getElementById('review-title').innerText = "مراجعة الامتحان كله";
+                questionsToReview = shuffledQuestions;
+            }
+
+            questionsToReview.forEach((q, idx) => {
+                const block = document.createElement('div');
+                block.className = 'review-block';
+                
+                const qText = document.createElement('div');
+                qText.className = 'review-q-text';
+                qText.innerText = `${idx + 1}. ${q.q}`;
+                
+                const status = document.createElement('div');
+                status.style.marginBottom = "10px";
+                if(q.userAnsweredCorrectly) {
+                    status.innerHTML = `<span class="review-status correct">✓ إجابة صحيحة</span>`;
+                } else if (q.userSelectedText === null) {
+                    status.innerHTML = `<span class="review-status wrong">✗ لم يتم الإجابة</span>`;
+                } else {
+                    status.innerHTML = `<span class="review-status wrong">✗ إجابة خاطئة (إجابتك: ${q.userSelectedText})</span>`;
+                }
+
+                const correctAns = q.shuffledOpts.find(o => o.isCorrect).text;
+                const info = document.createElement('div');
+                info.innerHTML = `<div style="background:#e9ecef; padding:10px; border-radius:6px; margin-top:10px;">
+                    <strong>الإجابة المسجلة حالياً:</strong> ${correctAns}
+                </div>`;
+
+                block.appendChild(qText);
+                block.appendChild(status);
+                block.appendChild(info);
+                reviewContainer.appendChild(block);
+            });
+        }
+
+        function backToResults() {
+            document.getElementById('review-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
